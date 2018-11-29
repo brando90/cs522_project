@@ -813,24 +813,33 @@ Inductive bevalR: bexp -> bool -> Prop :=
   | B_BTrue : bevalR BTrue true
   | B_BFalse : bevalR BFalse false
   | B_BEq : forall (a1 a2 : aexp) (n1 n2 : nat),
-      (a1 \\ n1) -> (a2 \\ n2) -> bevalR (BEq a1 a2) (beq_nat n1 n2)
+      (a1 \\ n1) -> (a2 \\ n2) -> (bevalR (BEq a1 a2) (beq_nat n1 n2))
   | B_BLe : forall (a1 a2 : aexp) (n1 n2 : nat),
-      (a1 \\ n1) -> (a2 \\ n2) -> bevalR (BLe a1 a2) (leb n1 n2)
+      (a1 \\ n1) -> (a2 \\ n2) -> (bevalR (BLe a1 a2) (leb n1 n2))
   | B_BNot : forall (e : bexp) (b : bool),
-      (bevalR e b) -> bevalR (BNot e) (negb b)
+      (bevalR e b) -> (bevalR (BNot e) (negb b))
   | B_BAnd : forall (e1 e2 : bexp) (b1 b2 : bool),
-      (bevalR e1 b1) -> (bevalR e2 b2) -> bevalR (BAnd e1 e2) (andb b1 b2)
+      (bevalR e1 b1) -> (bevalR e2 b2) -> (bevalR (BAnd e1 e2) (andb b1 b2))
 .
 
 Lemma beval_iff_bevalR : forall b bv,
-  bevalR b bv <-> beval b = bv.
+  (bevalR b bv) <-> (beval b = bv).
 Proof.
+  intros.
   split.
-  intros H.
-  induction H; simpl ; subst ; try(reflexivity).
-  admit. admit.
-  induction b ; simpl ; intros ; subst ; constructor ; try(apply aeval_iff_aevalR ; reflexivity).
-  admit.
+  intros.
+  induction H; simpl ; subst ; try(apply aeval_iff_aevalR in H) ; try(apply aeval_iff_aevalR in H0) ; subst ; reflexivity.
+  intros.
+  generalize dependent bv.
+  induction b ; simpl ; intros ; subst.
+  apply B_BTrue.
+  apply B_BFalse.
+  apply B_BEq ; apply aeval_iff_aevalR ; reflexivity.
+  apply B_BLe ; apply aeval_iff_aevalR ; reflexivity.
+  apply B_BNot. refine (IHb _ _). reflexivity.
+  apply B_BAnd.
+  refine (IHb1 _ _). reflexivity.
+  refine (IHb2 _ _). reflexivity.
 Qed.
 
 End AExp.

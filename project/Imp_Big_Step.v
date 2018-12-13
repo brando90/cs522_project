@@ -5,9 +5,7 @@ Definition State := string -> (option nat).
 
 Inductive BigConfig : Type := 
   | B_AExpConf : AExp -> State -> BigConfig
-  | B_NatConf : nat -> BigConfig
   | B_BExpConf : BExp -> State -> BigConfig
-  | B_BoolConf : bool -> BigConfig
   | B_StmtConf : Statement -> State -> BigConfig
   | B_BlkConf : Block -> State -> BigConfig
   | B_StateConf : State -> BigConfig

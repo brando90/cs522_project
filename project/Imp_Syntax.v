@@ -7,8 +7,7 @@ Inductive AExp : Type :=
   | AId : string -> AExp.
 
 Inductive BExp : Type :=
-  | BTrue : BExp
-  | BFalse : BExp
+  | BVal : bool -> BExp
   | BLe : AExp -> AExp -> BExp
   | BNot : BExp -> BExp
   | BAnd : BExp -> BExp -> BExp.

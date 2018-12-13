@@ -1,0 +1,109 @@
+mod IMP-CONFIGURATIONS-BIGSTEP is including IMP-SYNTAX + STATE .
+  sort Configuration .
+  op <_,_> : AExp State -> Configuration .
+  op   <_> : Int -> Configuration .
+  op <_,_> : BExp State -> Configuration .
+  op   <_> : Bool -> Configuration .
+  op <_,_> : Stmt State -> Configuration .
+  op   <_> : State -> Configuration .
+  op   <_> : Pgm -> Configuration .
+  ---
+  op Error : -> State .
+endm
+
+mod IMP-SEMANTICS-BIGSTEP is including IMP-CONFIGURATIONS-BIGSTEP .
+  var X : Id .  var Xl : List{Id} .  var Sigma Sigma' Sigma1 Sigma2 : State .
+  var I I1 I2 : Int .  var T : Bool .
+  var A A1 A2 : AExp .  var B B1 B2 : BExp .  var S S1 S2 : Stmt .
+
+--- Sorts/configurations
+--- rl < X, Error > => < Error > .
+--- rl < XL, Error > => < Error > .
+ rl < A, Error > => < Error > .
+ rl < B, Error > => < Error > .
+ rl < S, Error > => < Error > .
+
+--- BigStep-Int
+ rl < I, Sigma > => if Sigma =/=Bool Error then < I >  else < Error > fi .
+--- BigStep-lookup
+ crl < X, Sigma > => < Sigma(X) > if Sigma(X) =/=Bool undefined .
+ crl < X, Sigma > => < Error > if Sigma ==Bool Error .
+--- BigStep-ADD
+ crl < A1 + A2 , Sigma > => < I1 +Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > .
+ crl < A1 + A2 , Sigma > => < Error > if < A1, Sigma > => < Error >  .
+ crl < A1 + A2 , Sigma > => < Error > if < A2, Sigma > => < Error >  .
+ --- BigStep-DIV
+ crl < A1 / A2 , Sigma > => < I1 /Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > /\ I2 =/=Bool 0 .
+ crl < A1 / A2 , Sigma > => < Error > if < A2,Sigma > => < 0 > .
+ crl < A1 / A2 , Sigma > => < Error > if < A2,Sigma > => < 0 > .
+ crl < A1 / A2 , Sigma > => < Error > if < A1,Sigma > => < Error > .
+ crl < A1 / A2 , Sigma > => < Error > if < A2,Sigma > => < Error > .
+ crl < A1 / A2 , Sigma > => < Error > if Sigma => Error .
+
+---BigStep-Bool
+ rl < T,Sigma > => if Sigma =/=Bool Error then < T > else < Error > fi .
+
+---BigStep-LEQ
+--- You need what we call "sequential strictness" for less than, i.e. evaluate first argument and then second.
+ crl < A1 <= A2,Sigma > => < I1 <=Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > .
+ crl < A1 <= A2,Sigma > => < Error > if < A1,Sigma > => < Error > .
+ crl < A1 <= A2,Sigma > => < Error > if < A2,Sigma > => < Error > .
+
+ --- BigStep-Not-True
+ crl < ! B,Sigma > => < false > if < B,Sigma > => < true > .
+ crl < ! B,Sigma > => < Error > if < B,Sigma > => < Error > .
+
+--- BigStep-Not-False
+ crl < ! B,Sigma > => < true > if < B,Sigma > => < false > .
+--- crl < ! B,Sigma > => < Error > if < B,Sigma > => < Error > .
+
+--- BigStep-And-False
+ crl < B1 && B2,Sigma > => < false > if < B1,Sigma > => < false > .
+ crl < B1 && B2,Sigma > => < Error > if < B1,Sigma > => < Error > .
+
+--- BigStep-And-True
+ crl < B1 && B2,Sigma > => < T > if < B1,Sigma > => < true > /\ < B2,Sigma > => < T > .
+ crl < B1 && B2,Sigma > => < Error > if < B1,Sigma > => < true > /\ < B2,Sigma > => < Error > .
+
+--- BigStep-Empty-Block
+ rl < {} , Sigma > => < Sigma > .
+
+--- BigStep-Block
+ crl < {S},Sigma > => < Sigma' > if < S,Sigma > => < Sigma' > .
+--- crl < {S},Sigma > => < Error > if < S,Sigma > => < Error > .
+--- crl < {S},Sigma > => < Error > if Sigma ==Bool Error > .
+
+--- BigStep-ASGN
+ crl < X = A ; , Sigma > => < Sigma[I / X] > if < A,Sigma > => < I > /\ Sigma(X) =/=Bool undefined .
+ crl < X = A ; , Sigma > => < Error > if < A,Sigma > => < Error > /\ Sigma(X) =/=Bool undefined .
+
+--- BigStep-SEQ
+ crl < S1 S2,Sigma > => < Sigma2 > if < S1,Sigma > => < Sigma1 > /\ < S2,Sigma1 > => < Sigma2 > .
+ crl < S1 S2,Sigma > => < Error > if < S1,Sigma > => < Error > .
+ crl < S1 S2,Sigma > => < Error > if < S2,Sigma > => < Error > .
+
+--- BigStep-IF-True
+ crl < if (B) S1 else S2,Sigma > => < Sigma1 > if < B,Sigma > => < true > /\ < S1,Sigma > => < Sigma1 > .
+ crl < if (B) S1 else S2,Sigma > => < Error > if < B,Sigma > => < Error > .
+ ---crl < if (B) S1 else S2,Sigma > => < Sigma1 > if < B,Sigma > => < true > /\ < S1,Sigma > => < Error > .
+
+--- BigStep-IF-False
+ crl < if (B) S1 else S2,Sigma > => < Sigma2 > if < B,Sigma > => < false > /\ < S2,Sigma > => < Sigma2 > .
+ ---crl < if (B) S1 else S2,Sigma > => < Error > if < B,Sigma > => < false > /\ < S2,Sigma > => < Error > .
+
+--- BigStep-While-False
+ crl < while (B) S,Sigma > => < Sigma > if < B,Sigma > => < false > .
+ crl < while (B) S,Sigma > => < Error > if < B,Sigma > => < Error > .
+
+--- BigStep-While-True
+ crl < while (B) S,Sigma > => < Sigma' > if < B,Sigma > => < true > /\ < S while (B) S,Sigma > => < Sigma' > .
+ crl < while (B) S,Sigma > => < Error > if < B,Sigma > => < true > /\ < S, Sigma > => < Error > .
+ crl < while (B) S,Sigma > => < Error > if < B,Sigma > => < true > /\ < S while (B) S,Sigma > => < Error > .
+ crl < while (B) S,Sigma > => < Error > if < B,Sigma > => < true > /\ Sigma ==Bool Error .
+
+--- BigStep-PGM
+ --- crl < int Xl ; S > => < Sigma > if < S,(Xl |-> 0) > => < Sigma > .
+ crl < int Xl ; S > => < Sigma > if < S,(Xl |-> 0) > => < Sigma > .
+ crl < int Xl ; S > => < Error > if < S,(Xl |-> 0) > => < Error > .
+
+endm

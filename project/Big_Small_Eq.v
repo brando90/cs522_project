@@ -1,3 +1,4 @@
+Add LoadPath "C:\\Users\\ument\\School\\cs522\\cs522_project\\project".
 Require Import Imp_Syntax.
 Require Import Imp_Big_Step.
 Require Import Imp_Small_Step.

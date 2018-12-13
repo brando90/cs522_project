@@ -1,9 +1,11 @@
+Add LoadPath "C:\\Users\\ument\\School\\cs522\\cs522_project\\project".
 Require Import Imp_Syntax.
 Require Import Coq.Strings.String.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.Lists.List.
+Require Import Coq.Init.Nat.
 Import ListNotations.
 
 Definition State := string -> (option nat).
@@ -72,3 +74,94 @@ Inductive SmallStepR : SmallConfig -> SmallConfig -> Prop :=
       ((t_update Sigma id X) = Sigma') ->
       SmallStepR (S_StmtConf (Assignment id (ANum X)) Sigma) (S_BlkConf EmptyBlk Sigma')
 .
+
+Fixpoint aeval (st : State) (a : AExp) : option nat :=
+  match a with
+  | ANum n => Some n
+  | AId x => st x
+  | APlus a1 a2 => match (aeval st a1) with
+    | Some n => match (aeval st a2) with
+      | Some n0 => Some (n + n0)
+      | None => None
+      end
+    | None => None
+    end
+  | ADiv a1 a2 => match (aeval st a2) with
+    | Some 0 => None
+    | Some (S n) => match (aeval st a1) with
+      | Some n0 => Some (div n0 (S n))
+      | None => None
+      end
+    | None => None
+    end
+  end.
+
+Fixpoint beval (st : State) (b : BExp) : option bool :=
+  match b with
+  | BVal v => Some v
+  | BLe a1 a2 => match (aeval st a1) with
+    | Some v => match (aeval st a2) with
+      | Some v0 => Some (leb v v0)
+      | None => None
+      end
+    | None => None
+    end
+  | BNot b1 => match (beval st b1) with
+    | Some v => Some (negb v)
+    | None => None
+    end
+  | BAnd b1 b2  => match (beval st b1) with
+    | Some v => match (beval st b2) with
+      | Some v0 => Some (andb v v0)
+      | None => None
+      end
+    | None => None
+    end
+  end.
+
+Theorem BEvalR : forall (Sigma : State) (B : BExp) (b : bool),
+  (((beval Sigma B) = Some b) <-> (SmallStepR (S_BExpConf B Sigma) (S_BExpConf (BVal b) Sigma))).
+  Proof.
+  Admitted.
+
+Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
+  (((aeval Sigma A) = Some n) <-> (SmallStepR (S_AExpConf A Sigma) (S_AExpConf (ANum n) Sigma))).
+  Proof.
+  Admitted.
+
+Theorem Confluence : forall (A B C : SmallConfig),
+  (SmallStepR A B) -> (SmallStepR A C) -> exists D : SmallConfig, ((SmallStepR B D) /\ (SmallStepR C D)).
+Proof.
+  induction A ; intros.
+  - induction a.
+  admit.
+  destruct a1 ; destruct a2 ; try rewrite PlusANums in H.
+  destruct B.
+  intros.
+  refine (ex_intro _ _ _).
+  refine (conj _ _).
+  induction B.
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  

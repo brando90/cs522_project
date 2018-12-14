@@ -75,6 +75,54 @@ Inductive SmallStepR : SmallConfig -> SmallConfig -> Prop :=
       SmallStepR (S_StmtConf (Assignment id (ANum X)) Sigma) (S_BlkConf EmptyBlk Sigma')
 .
 
+Inductive NSmallSteps : nat -> SmallConfig -> SmallConfig -> Prop :=
+  | Zero : forall (C : SmallConfig), NSmallSteps 0 C C
+  | Succ : forall (C1 C2 : SmallConfig), 
+.
+
+Inductive ConfigEquivR : SmallConfig -> SmallConfig -> Prop :=
+  | Trans : forall (C1 C2 C3 : SmallConfig),
+      ConfigEquivR C1 C2 -> ConfigEquivR C2 C3 -> ConfigEquivR C1 C3
+  | Symmetry : forall (C1 C2 : SmallConfig),
+      ConfigEquivR C1 C2 -> ConfigEquivR C2 C1
+  | Reflex : forall (C : SmallConfig), ConfigEquivR C C
+  | SmallStep : forall (C1 C2 : SmallConfig),
+      SmallStepR C1 C2 -> ConfigEquivR C1 C2
+.
+
+Definition relation (X: Type) := X -> X -> Prop.
+
+Definition reflexive {X: Type} (R: relation X) :=
+  forall a : X, R a a.
+
+Definition transitive {X: Type} (R: relation X) :=
+  forall a b c : X, (R a b) -> (R b c) -> (R a c).
+
+Definition symmetric {X: Type} (R: relation X) :=
+  forall a b : X, (R a b) -> (R b a).
+
+Definition equivalence {X:Type} (R: relation X) :=
+  (reflexive R) /\ (symmetric R) /\ (transitive R).
+
+Theorem SmallStepEquiv : equivalence ConfigEquivR.
+Proof.
+  constructor ; constructor ; try(constructor).
+  apply SmallStep.
+  apply Reflex.
+  exact H.
+  constructor.
+  generalize H0.
+  generalize H.
+  apply Trans.
+Qed.
+
+Theorem ImplEqual : forall (C1 C2 : SmallConfig),
+  ConfigEquivR C1 C2 -> (C1 = C2).
+Proof.
+  intros.
+  inversion H ; subst.
+Qed.
+
 Fixpoint aeval (st : State) (a : AExp) : option nat :=
   match a with
   | ANum n => Some n
@@ -119,13 +167,38 @@ Fixpoint beval (st : State) (b : BExp) : option bool :=
     end
   end.
 
-Theorem BEvalR : forall (Sigma : State) (B : BExp) (b : bool),
-  (((beval Sigma B) = Some b) <-> (SmallStepR (S_BExpConf B Sigma) (S_BExpConf (BVal b) Sigma))).
+Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
+  (((aeval Sigma A) = Some n) <-> (ConfigEquivR (S_AExpConf A Sigma) (S_AExpConf (ANum n) Sigma))).
   Proof.
+  intros.
+  split.
+  generalize dependent n.
+  induction A.
+  intros.
+  inversion H.
+  apply SmallStep.
+  apply Reflex.
+  intros.
+  admit.
+  admit.
+  admit.
+  intros.
+  generalize dependent n.
+  induction A.
+  intros.
+  simpl.
+  cut (n = n0).
+  intros.
+  subst.
+  reflexivity.
+  cut (forall (X Y : SmallConfig), (ConfigEquivR X Y )).
+  inversion H ; subst.
+  
+  
   Admitted.
 
-Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
-  (((aeval Sigma A) = Some n) <-> (SmallStepR (S_AExpConf A Sigma) (S_AExpConf (ANum n) Sigma))).
+Theorem BEvalR : forall (Sigma : State) (B : BExp) (b : bool),
+  (((beval Sigma B) = Some b) <-> (SmallStepR (S_BExpConf B Sigma) (S_BExpConf (BVal b) Sigma))).
   Proof.
   Admitted.
 

@@ -40,9 +40,8 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
   | BigStep_Leq : forall (A1 A2 I1 I2 : AExp) (Sigma : State),
      (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
      (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
-     (BigStepR (B_BExpConf (BLe A1 A2) ) (B_BExpConf (BLe I1 I2) ).
+     (BigStepR (B_BExpConf (BLe A1 A2) Sigma) (B_BExpConf (BLe I1 I2) Sigma) )
   (*  crl < ! B,Sigma > => < false > if < B,Sigma > => < true > . *)
   | BigStep_Not : forall (A B : BExp) (Sigma : State),
-     (BigStepR (B_BExpConf A Sigma) (B_AExpConf B Sigma) ) ->
-     (BigStepR (B_BExpConf (BNot A) Sigma) (B_AExpConf (BNot B) Sigma) ).
-  
+     (BigStepR (B_BExpConf A Sigma) (B_BExpConf B Sigma) ) ->
+     (BigStepR (B_BExpConf (BNot A) Sigma) (B_BExpConf (BNot B) Sigma) ).  

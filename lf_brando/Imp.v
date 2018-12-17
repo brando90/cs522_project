@@ -29,7 +29,17 @@ Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Add LoadPath "/Users/brandomiranda/home_simulation_research/auto_maths_papers/coq/software_foundations_vol1".
+
+Require Import Coq.Arith.Arith.
+Require Import Coq.Bool.Bool.
+Require Export Coq.Strings.String.
+Require Import Coq.Logic.FunctionalExtensionality.
+Require Import Coq.Lists.List.
+Import ListNotations.
+
+(* Add LoadPath "/Users/brandomiranda/home_simulation_research/auto_maths_papers/coq/software_foundations_vol1". *)
+(* Add LoadPath "/Users/brandomiranda/home_simulation_research/cs522_project/project". *)
+Add LoadPath "/Users/brandomiranda/home_simulation_research/cs522_project/lf_brando".
 Require Export Maps.
 
 Module AExp.
@@ -1326,6 +1336,7 @@ Inductive ceval : com -> state -> state -> Prop :=
       (WHILE b DO c END) / st \\ st''
 
   where "c1 '/' st '\\' st'" := (ceval c1 st st').
+
 
 (** The cost of defining evaluation as a relation instead of a
     function is that we now need to construct _proofs_ that some

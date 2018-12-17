@@ -22,8 +22,17 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
   | Block : forall (S : Statement) (Sigma Sigma' : State),
       BigStepR (B_StmtConf S Sigma) (B_StateConf Sigma') ->
       BigStepR (B_BlkConf (Blk S) Sigma) (B_StateConf Sigma')
-(*  crl < A1 + A2 , Sigma > => < I1 +Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > . *)
+  (* TODO: do we need this? rl < I,Sigma > => < I > . *)
+  (* TODO: do we need this? crl < X,Sigma > => < Sigma(X) > if Sigma(X) =/=Bool undefined . *)
+  (*  crl < A1 + A2 , Sigma > => < I1 +Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > . TODO: how do we deal with the division by zero? *)
   | BigStep_Add : forall (A1 A2 I1 I2 : AExp ) (Sigma : State ),
     (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
     (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
-    (BigStepR (B_AExpConf (APlus A1 A2) Sigma) (B_AExpConf (APlus I1 I2) Sigma)).
+    (BigStepR (B_AExpConf (APlus A1 A2) Sigma) (B_AExpConf (APlus I1 I2) Sigma))
+  (* crl < A1 / A2,Sigma > => < I1 /Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > /\ I2 =/=Bool 0 . *)
+  | BigStep_Divide: forall (A1 A2 I1 I2 : AExp ) (Sigma : State ),
+    (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
+    (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
+    (* TODO (not (I2 = 0) ) -> *)
+    (BigStepR (B_AExpConf (APlus A1 A2) Sigma) (B_AExpConf (ADiv I1 I2) Sigma)).
+  

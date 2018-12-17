@@ -1,4 +1,4 @@
-  Inductive bool : Type :=
+Inductive bool : Type :=
   |true : bool
   |false : bool.
 

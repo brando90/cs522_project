@@ -76,10 +76,15 @@ Inductive ev : nat -> Prop :=
 | ev_SS : forall n : nat, ev n -> ev (S (S n)).
 
 Check ev.
+(* ev : nat -> Prop *)
 Check ev 0.
+(* ev 0 : Prop *)
 Check ev 2.
+(* ev 2 : Prop *)
 Compute ev 0.
+(* = ev 0 : Prop*)
 Compute ev.
+(*  = ev : nat -> Prop*)
 Compute ev 2.
 
 (** This definition is different in one crucial respect from
@@ -516,6 +521,10 @@ Inductive le : nat -> nat -> Prop :=
 
 Notation "m <= n" := (le m n).
 
+Check le.
+Compute le 2 2.
+Compute le 2 3.
+
 (** Proofs of facts about [<=] using the constructors [le_n] and
     [le_S] follow the same patterns as proofs about properties, like
     [ev] above. We can [apply] the constructors to prove [<=]
@@ -562,6 +571,14 @@ Notation "m < n" := (lt m n).
 
 Inductive square_of : nat -> nat -> Prop :=
   | sq : forall n:nat, square_of n (n * n).
+
+Check square_of.
+(* square_of
+     : nat -> nat -> Prop *)
+Check sq.
+(* sq
+     : forall n : nat, square_of n (n * n) *)
+Check sq 2.
 
 Inductive next_nat : nat -> nat -> Prop :=
   | nn : forall n:nat, next_nat n (S n).

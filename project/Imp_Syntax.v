@@ -12,6 +12,10 @@ Inductive BExp : Type :=
   | BNot : BExp -> BExp
   | BAnd : BExp -> BExp -> BExp.
 
+Compute BVal true.
+Example test_BVal: (BVal true) = BVal true.
+Proof. simpl. reflexivity. Qed.
+
 Inductive Block : Type :=
   | EmptyBlk : Block
   | Blk : Statement -> Block

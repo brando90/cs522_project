@@ -9,6 +9,8 @@ Require Import Coq.Init.Nat.
 Import ListNotations.
 
 Definition State := string -> (option nat).
+Definition t_update (m : State) (x : string) (v : nat) :=
+  fun x' => if string_dec x x' then Some v else m x'.
 
 Inductive BigConfig : Type := 
   | B_AExpConf : AExp -> State -> BigConfig
@@ -19,29 +21,45 @@ Inductive BigConfig : Type :=
   | B_PgmConf : Program -> BigConfig.
 
 Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
-  | Block : forall (S : Statement) (Sigma Sigma' : State),
-      BigStepR (B_StmtConf S Sigma) (B_StateConf Sigma') ->
-      BigStepR (B_BlkConf (Blk S) Sigma) (B_StateConf Sigma')
   (* TODO: do we need this? rl < I,Sigma > => < I > . *)
   (* TODO: do we need this? crl < X,Sigma > => < Sigma(X) > if Sigma(X) =/=Bool undefined . *)
   (*  crl < A1 + A2 , Sigma > => < I1 +Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > . TODO: how do we deal with the division by zero? *)
   | BigStep_Add : forall (A1 A2 I1 I2 : AExp ) (Sigma : State ),
-    (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
-    (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
-    (BigStepR (B_AExpConf (APlus A1 A2) Sigma) (B_AExpConf (APlus I1 I2) Sigma))
+      (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
+      (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
+      (BigStepR (B_AExpConf (APlus A1 A2) Sigma) (B_AExpConf (APlus I1 I2) Sigma))
   (* crl < A1 / A2,Sigma > => < I1 /Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > /\ I2 =/=Bool 0 . *)
   | BigStep_Divide: forall (A1 A2 I1 I2 : AExp ) (Sigma : State ),
-    (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
-    (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
-    (* TODO (not (I2 = 0) ) -> *)
-    (BigStepR (B_AExpConf (APlus A1 A2) Sigma) (B_AExpConf (ADiv I1 I2) Sigma))
+      (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
+      (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
+      (* TODO (not (I2 = 0) ) -> *)
+      (BigStepR (B_AExpConf (APlus A1 A2) Sigma) (B_AExpConf (ADiv I1 I2) Sigma))
   (* TODO: do we need this? rl < T,Sigma > => < T > . *)
   (* crl < A1 <= A2,Sigma > => < I1 <=Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > .*)
   | BigStep_Leq : forall (A1 A2 I1 I2 : AExp) (Sigma : State),
-     (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
-     (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
-     (BigStepR (B_BExpConf (BLe A1 A2) Sigma) (B_BExpConf (BLe I1 I2) Sigma) )
+      (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
+      (BigStepR (B_AExpConf A2 Sigma) (B_AExpConf I2 Sigma) ) ->
+      (BigStepR (B_BExpConf (BLe A1 A2) Sigma) (B_BExpConf (BLe I1 I2) Sigma) )
   (*  crl < ! B,Sigma > => < false > if < B,Sigma > => < true > . *)
   | BigStep_Not : forall (A B : BExp) (Sigma : State),
-     (BigStepR (B_BExpConf A Sigma) (B_BExpConf B Sigma) ) ->
-     (BigStepR (B_BExpConf (BNot A) Sigma) (B_BExpConf (BNot B) Sigma) ).  
+      (BigStepR (B_BExpConf A Sigma) (B_BExpConf B Sigma) ) ->
+      (BigStepR (B_BExpConf (BNot A) Sigma) (B_BExpConf (BNot B) Sigma) )
+  (* crl < B1 && B2,Sigma > => < false > if < B1,Sigma > => < false > . *)
+  | BigStep_And_F : forall (B1 B2 : BExp ) (Sigma : State),
+      (BigStepR (B_BExpConf B1 Sigma) (B_BExpConf (BVal false) Sigma) ) ->
+      (BigStepR (B_BExpConf (BAnd B1 B2) Sigma) (B_BExpConf (BVal false) Sigma) )
+  (* crl < B1 && B2,Sigma > => < T > if < B1,Sigma > => < true > /\ < B2,Sigma > => < T > . *)
+  | BigStep_And_T : forall (B1 B2 : BExp ) (Sigma : State),
+      (BigStepR (B_BExpConf B1 Sigma) (B_BExpConf (BVal true) Sigma) ) ->
+      (BigStepR (B_BExpConf B2 Sigma) (B_BExpConf (BVal true) Sigma) ) ->
+      (BigStepR (B_BExpConf (BAnd B1 B2) Sigma) (B_BExpConf (BVal true) Sigma) )
+  (* TODO: rl < {},Sigma > => < Sigma > . *)
+  (*  crl < {S},Sigma > => < Sigma' > if < S,Sigma > => < Sigma' > .  *)
+  | BigStep_Block : forall (S : Statement) (Sigma Sigma' : State),
+      BigStepR (B_StmtConf S Sigma) (B_StateConf Sigma') ->
+      BigStepR (B_BlkConf (Blk S) Sigma) (B_StateConf Sigma')
+  (*  crl < X = A ;,Sigma > => < Sigma[I / X] > if < A,Sigma > => < I > /\ Sigma(X) =/=Bool undefined . *)
+  | BigStep_Assign : forall (X : nat) (id : string) (Sigma Sigma': State),
+      ((t_update Sigma id X) = Sigma') ->
+      BigStepR (B_StmtConf (Assignment id (ANum X)) Sigma) (B_BlkConf EmptyBlk Sigma').
+  (*  crl < S1 S2,Sigma > => < Sigma2 > if < S1,Sigma > => < Sigma1 > /\ < S2,Sigma1 > => < Sigma2 > . *)

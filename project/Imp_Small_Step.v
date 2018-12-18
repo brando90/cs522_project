@@ -77,9 +77,10 @@ Inductive SmallStepR : SmallConfig -> SmallConfig -> Prop :=
 
 Inductive NSmallSteps : nat -> SmallConfig -> SmallConfig -> Prop :=
   | Zero : forall (C : SmallConfig), NSmallSteps 0 C C
-  | Succ : forall (C1 C2 : SmallConfig), 
+  | Succ : forall (C1 C2 C3 : SmallConfig) (N : nat),
+      (NSmallSteps N C1 C2) -> (SmallStepR C2 C3) -> (NSmallSteps (S N) C1 C3)
 .
-
+(*
 Inductive ConfigEquivR : SmallConfig -> SmallConfig -> Prop :=
   | Trans : forall (C1 C2 C3 : SmallConfig),
       ConfigEquivR C1 C2 -> ConfigEquivR C2 C3 -> ConfigEquivR C1 C3
@@ -89,6 +90,10 @@ Inductive ConfigEquivR : SmallConfig -> SmallConfig -> Prop :=
   | SmallStep : forall (C1 C2 : SmallConfig),
       SmallStepR C1 C2 -> ConfigEquivR C1 C2
 .
+*)
+
+Definition ConfigEquivR (C1 C2 : SmallConfig) :=
+  exists N : nat, NSmallSteps N C1 C2.
 
 Definition relation (X: Type) := X -> X -> Prop.
 
@@ -106,14 +111,17 @@ Definition equivalence {X:Type} (R: relation X) :=
 
 Theorem SmallStepEquiv : equivalence ConfigEquivR.
 Proof.
+  constructor ; try(constructor).
+  .
+(*
   constructor ; constructor ; try(constructor).
-  apply SmallStep.
   apply Reflex.
   exact H.
   constructor.
   generalize H0.
   generalize H.
   apply Trans.
+  *)
 Qed.
 
 Theorem ImplEqual : forall (C1 C2 : SmallConfig),

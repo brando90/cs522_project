@@ -8,4 +8,10 @@ Definition State := string -> (option nat).
 
 Theorem Big_Small_Equiv : forall (P : Program) (S : State),
   (BigStepR (B_PgmConf P) (B_StateConf S)) <-> (SmallStepR (S_PgmConf P) (S_BlkConf EmptyBlk S)).
+  intros.
+  split.
+  induction P.
+  intros.
+  generalize dependent s.
+  induction s ; intros.
 Admitted.

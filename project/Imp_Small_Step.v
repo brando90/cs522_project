@@ -73,6 +73,15 @@ Inductive SmallStepR : SmallConfig -> SmallConfig -> Prop :=
   | Assign : forall (X : nat) (id : string) (Sigma Sigma': State),
       ((t_update Sigma id X) = Sigma') ->
       SmallStepR (S_StmtConf (Assignment id (ANum X)) Sigma) (S_BlkConf EmptyBlk Sigma')
+  | IfStep : forall (X Y : BExp) (B1 B2 : Block) (Sigma : State),
+      (SmallStepR (S_BExpConf X Sigma) (S_BExpConf Y Sigma)) ->
+      SmallStepR (S_StmtConf (IfElse X B1 B2) Sigma) (S_StmtConf (IfElse Y B1 B2) Sigma)
+  | IfFalse : forall (B1 B2 : Block) (Sigma : State),
+      SmallStepR (S_StmtConf (IfElse (BVal true) B1 B2) Sigma) (S_BlkConf B1 Sigma)
+  | IfTrue : forall (B1 B2 : Block) (Sigma : State),
+      SmallStepR (S_StmtConf (IfElse (BVal false) B1 B2) Sigma) (S_BlkConf B2 Sigma)
+  | While : forall (X : BExp) (B : Block) (Sigma : State),
+      SmallStepR (S_StmtConf (While X B) Sigma) (S_StmtConf (IfElse X (Blk (While X B)) EmptyBlk) Sigma)
 .
 
 Inductive NSmallSteps : nat -> SmallConfig -> SmallConfig -> Prop :=
@@ -112,7 +121,7 @@ Definition equivalence {X:Type} (R: relation X) :=
 Theorem SmallStepEquiv : equivalence ConfigEquivR.
 Proof.
   constructor ; try(constructor).
-  .
+
 (*
   constructor ; constructor ; try(constructor).
   apply Reflex.
@@ -122,14 +131,14 @@ Proof.
   generalize H.
   apply Trans.
   *)
-Qed.
+Admitted.
 
 Theorem ImplEqual : forall (C1 C2 : SmallConfig),
   ConfigEquivR C1 C2 -> (C1 = C2).
 Proof.
   intros.
   inversion H ; subst.
-Qed.
+Admitted.
 
 Fixpoint aeval (st : State) (a : AExp) : option nat :=
   match a with
@@ -184,6 +193,7 @@ Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   induction A.
   intros.
   inversion H.
+  (*
   apply SmallStep.
   apply Reflex.
   intros.
@@ -202,7 +212,7 @@ Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   cut (forall (X Y : SmallConfig), (ConfigEquivR X Y )).
   inversion H ; subst.
   
-  
+  *)
   Admitted.
 
 Theorem BEvalR : forall (Sigma : State) (B : BExp) (b : bool),
@@ -221,7 +231,8 @@ Proof.
   intros.
   refine (ex_intro _ _ _).
   refine (conj _ _).
-  induction B.
+  (*induction B*)
+Admitted.
   
   
   

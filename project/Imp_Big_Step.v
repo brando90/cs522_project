@@ -23,6 +23,9 @@ Inductive BigConfig : Type :=
 Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
   (* TODO: do we need this? rl < I,Sigma > => < I > . *)
   (* TODO: do we need this? crl < X,Sigma > => < Sigma(X) > if Sigma(X) =/=Bool undefined . *)
+  | IdVal : forall (id : string) (X : nat) (Sigma : State),
+      ((Sigma id) = (Some X)) ->
+      BigStepR (B_AExpConf (AId id) Sigma) (B_AExpConf (ANum X) Sigma)
   (*  crl < A1 + A2 , Sigma > => < I1 +Int I2 > if < A1,Sigma > => < I1 > /\ < A2,Sigma > => < I2 > . TODO: how do we deal with the division by zero? *)
   | BigStep_Add : forall (A1 A2 I1 I2 : AExp ) (Sigma : State ),
       (BigStepR (B_AExpConf A1 Sigma) (B_AExpConf I1 Sigma) ) ->
@@ -63,3 +66,12 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
       ((t_update Sigma id X) = Sigma') ->
       BigStepR (B_StmtConf (Assignment id (ANum X)) Sigma) (B_BlkConf EmptyBlk Sigma').
   (*  crl < S1 S2,Sigma > => < Sigma2 > if < S1,Sigma > => < Sigma1 > /\ < S2,Sigma1 > => < Sigma2 > . *)
+  (*| BigStep_Seq: forall (S1 S2 : Statement) (Sigma1 Sigma2 : State),
+      BigStepR (B_StmtConf S1 Sigma1) (B_StmtConf S Sigma') ->
+      BigStepR (B_BlkConf (Blk S) Sigma) (B_StateConf Sigma') *)
+  (* crl < if (B) S1 else S2,Sigma > => < Sigma1 > if < B,Sigma > => < true > /\ < S1,Sigma > => < Sigma1 > . *)
+  (* crl < if (B) S1 else S2,Sigma > => < Sigma2 > if < B,Sigma > => < false > /\ < S2,Sigma > => < Sigma2 > . *)
+  (* crl < while (B) S,Sigma > => < Sigma > if < B,Sigma > => < false > . *)
+  (* crl < while (B) S,Sigma > => < Sigma' > if < B,Sigma > => < true > /\ < S while (B) S,Sigma > => < Sigma' > . *)
+
+  (* crl < int Xl ; S > => < Sigma > if < S,(Xl |-> 0) > => < Sigma > . *)

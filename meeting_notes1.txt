@@ -1,0 +1,12 @@
+* division by zero, just do it, somehow…shouldn’t be to hard
+* Some not very clear to me
+    * something about being a number?
+* showing the main proof with admitted statements
+    * TODO: write a sketch a sketch of proof
+        * that would tell us which lemmas we need
+* AEvalR is key
+    * big step assignment is equal to small step assignment
+        * reduced to showing that that arithmetic expressions evaluate to the same thing
+    * if we have two while loops, 
+        * it will be the same if the blocks and 
+        * the beval are the same

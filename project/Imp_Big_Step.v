@@ -64,12 +64,17 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
   (*  crl < X = A ;,Sigma > => < Sigma[I / X] > if < A,Sigma > => < I > /\ Sigma(X) =/=Bool undefined . *)
   | BigStep_Assign : forall (X : nat) (id : string) (Sigma Sigma': State),
       ((t_update Sigma id X) = Sigma') ->
-      BigStepR (B_StmtConf (Assignment id (ANum X)) Sigma) (B_BlkConf EmptyBlk Sigma').
+      BigStepR (B_StmtConf (Assignment id (ANum X)) Sigma) (B_BlkConf EmptyBlk Sigma')
   (*  crl < S1 S2,Sigma > => < Sigma2 > if < S1,Sigma > => < Sigma1 > /\ < S2,Sigma1 > => < Sigma2 > . *)
-  (*| BigStep_Seq: forall (S1 S2 : Statement) (Sigma1 Sigma2 : State),
-      BigStepR (B_StmtConf S1 Sigma1) (B_StmtConf S Sigma') ->
-      BigStepR (B_BlkConf (Blk S) Sigma) (B_StateConf Sigma') *)
+  | BigStep_Seq: forall (S1 S2 : Statement) (Sigma Sigma1 Sigma2 : State),
+      BigStepR (B_StmtConf S1 Sigma) (B_StateConf Sigma1) ->
+      BigStepR (B_StmtConf S2 Sigma1) (B_StateConf Sigma2) ->
+      BigStepR (B_StmtConf (Seq S1 S2) Sigma) (B_StateConf Sigma2).
   (* crl < if (B) S1 else S2,Sigma > => < Sigma1 > if < B,Sigma > => < true > /\ < S1,Sigma > => < Sigma1 > . *)
+  (*
+  | BigStep_If: forall (B : BExp) (S1 S2 : Statement) (Sigma Sigma1 Sigma2 : State),
+    BigStepR (IfElse (B_BExpConf B1 Sigma) )
+  *)
   (* crl < if (B) S1 else S2,Sigma > => < Sigma2 > if < B,Sigma > => < false > /\ < S2,Sigma > => < Sigma2 > . *)
   (* crl < while (B) S,Sigma > => < Sigma > if < B,Sigma > => < false > . *)
   (* crl < while (B) S,Sigma > => < Sigma' > if < B,Sigma > => < true > /\ < S while (B) S,Sigma > => < Sigma' > . *)

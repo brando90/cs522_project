@@ -80,3 +80,7 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
   (* crl < while (B) S,Sigma > => < Sigma' > if < B,Sigma > => < true > /\ < S while (B) S,Sigma > => < Sigma' > . *)
 
   (* crl < int Xl ; S > => < Sigma > if < S,(Xl |-> 0) > => < Sigma > . *)
+
+Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
+  (((aeval Sigma A) = Some n) <-> (ConfigEquivR (B_AExpConf A Sigma) (B_AExpConf (ANum n) Sigma))).
+  Proof. Admitted.

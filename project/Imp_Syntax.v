@@ -1,6 +1,8 @@
 Require Import Coq.Strings.String.
 Require Export ZArith_base.
 Require Import Coq.Init.Nat.
+Require Import Coq.Lists.List.
+Require Import Coq.Bool.Bool.
 
 Inductive AExp : Type :=
   | ANum : nat -> AExp
@@ -58,13 +60,12 @@ Fixpoint aeval (st : State) (a : AExp) : option nat :=
       | None => None
     end
   end.
-
 Fixpoint beval (st : State) (b : BExp) : option bool :=
   match b with
   | BVal v => Some v
   | BLe a1 a2 => match (aeval st a1) with
     | Some v => match (aeval st a2) with
-      | Some v0 => Some (leb v v0)
+      | Some v0 => Some (Nat.leb v v0)
       | None => None
       end
     | None => None
@@ -81,3 +82,9 @@ Fixpoint beval (st : State) (b : BExp) : option bool :=
     | None => None
     end
   end.
+
+  Fixpoint bool_in (a: string) (l:list string) : bool :=
+    match l with
+      | nil => false
+      | b :: m => orb (if (string_dec b a) then true else false) (bool_in a m)
+    end.

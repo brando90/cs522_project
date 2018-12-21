@@ -84,16 +84,14 @@ Inductive SmallStepR : SmallConfig -> SmallConfig -> Prop :=
       SmallStepR (S_StmtConf (While X B) Sigma) (S_StmtConf (IfElse X (Blk (While X B)) EmptyBlk) Sigma)
   | Program_intro : forall (S : Statement) (Ids : list string) (Sigma : State),
     SmallStepR (S_PgmConf (Pgm Ids S)) (S_StmtConf S (fun x =>
-      match (In x Ids) with
-        | True => Some 0
-      end)
+      if (bool_in x Ids) then Some 0 else None)
     )
 .
 
 Inductive NSmallSteps : nat -> SmallConfig -> SmallConfig -> Prop :=
   | Zero : forall (C : SmallConfig), NSmallSteps 0 C C
-  | Succ : forall (C1 C2 C3 : SmallConfig) (N : nat),
-      (NSmallSteps N C1 C2) -> (SmallStepR C2 C3) -> (NSmallSteps (S N) C1 C3)
+  | Succ : forall (C1 C2 C3 : SmallConfig) (N M : nat),
+      (NSmallSteps N C2 C3) -> (SmallStepR C1 C2) -> (M = (S N))-> (NSmallSteps M C1 C3)
 .
 (*
 Inductive ConfigEquivR : SmallConfig -> SmallConfig -> Prop :=

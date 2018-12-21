@@ -28,7 +28,7 @@ with Statement : Type :=
 Inductive Program : Type :=
   | Pgm : list string -> Statement -> Program.
   
-  Fixpoint aeval (st : State) (a : AExp) : option nat :=
+Fixpoint aeval (st : State) (a : AExp) : option nat :=
   match a with
   | ANum n => Some n
   | AId x => st x

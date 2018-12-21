@@ -1,3 +1,4 @@
+Add LoadPath "C:\\Users\\ument\\School\\cs522\\cs522_project\\project".
 Add LoadPath "/Users/brandomiranda/home_simulation_research/cs522_project/project".
 Require Import Imp_Syntax.
 Require Import Coq.Strings.String.
@@ -62,9 +63,10 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
       BigStepR (B_StmtConf S Sigma) (B_StateConf Sigma') ->
       BigStepR (B_BlkConf (Blk S) Sigma) (B_StateConf Sigma')
   (*  crl < X = A ;,Sigma > => < Sigma[I / X] > if < A,Sigma > => < I > /\ Sigma(X) =/=Bool undefined . *)
-  | BigStep_Assign : forall (X : nat) (id : string) (Sigma Sigma': State),
+  | BigStep_Assign : forall (X : nat) (A : AExp) (id : string) (Sigma Sigma': State),
+      (BigStepR (B_AExpConf A Sigma) (B_AExpConf (ANum X) Sigma)) ->
       ((t_update Sigma id X) = Sigma') ->
-      BigStepR (B_StmtConf (Assignment id (ANum X)) Sigma) (B_BlkConf EmptyBlk Sigma')
+      BigStepR (B_StmtConf (Assignment id A) Sigma) (B_StateConf Sigma')
   (*  crl < S1 S2,Sigma > => < Sigma2 > if < S1,Sigma > => < Sigma1 > /\ < S2,Sigma1 > => < Sigma2 > . *)
   | BigStep_Seq: forall (S1 S2 : Statement) (Sigma Sigma1 Sigma2 : State),
       BigStepR (B_StmtConf S1 Sigma) (B_StateConf Sigma1) ->
@@ -88,10 +90,18 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
   | BigStep_While_True: forall (Bl : BExp) (Bck : Block) (S1 S2 : Statement) (Sigma Sigma' : State),
     BigStepR (B_BExpConf Bl Sigma) (B_BExpConf (BVal true) Sigma) ->
     BigStepR (B_StmtConf (While Bl Bck) Sigma) (B_StateConf Sigma') ->
-    BigStepR (B_StmtConf (While Bl Bck) Sigma) (B_StateConf Sigma').
+    BigStepR (B_StmtConf (While Bl Bck) Sigma) (B_StateConf Sigma')
+  | BigStep_Pgm : forall (S : Statement) (Ids : list string) (Sigma : State),
+    BigStepR (B_StmtConf S (fun x =>
+      match (In x Ids) with
+        | True => Some 0
+      end)
+    ) (B_StateConf Sigma) ->
+    BigStepR (B_PgmConf (Pgm Ids S)) (B_StateConf Sigma)
+.
   (* TODO: crl < int Xl ; S > => < Sigma > if < S,(Xl |-> 0) > => < Sigma > . *)
-
+(*
 Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   (((aeval Sigma A) = Some n) <-> (ConfigEquivR (B_AExpConf A Sigma) (B_AExpConf (ANum n) Sigma))).
   Proof. 
-  Admitted.
+  Admitted.*)

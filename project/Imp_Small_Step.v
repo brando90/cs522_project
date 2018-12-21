@@ -76,12 +76,18 @@ Inductive SmallStepR : SmallConfig -> SmallConfig -> Prop :=
   | IfStep : forall (X Y : BExp) (B1 B2 : Block) (Sigma : State),
       (SmallStepR (S_BExpConf X Sigma) (S_BExpConf Y Sigma)) ->
       SmallStepR (S_StmtConf (IfElse X B1 B2) Sigma) (S_StmtConf (IfElse Y B1 B2) Sigma)
-  | IfFalse : forall (B1 B2 : Block) (Sigma : State),
-      SmallStepR (S_StmtConf (IfElse (BVal true) B1 B2) Sigma) (S_BlkConf B1 Sigma)
   | IfTrue : forall (B1 B2 : Block) (Sigma : State),
+      SmallStepR (S_StmtConf (IfElse (BVal true) B1 B2) Sigma) (S_BlkConf B1 Sigma)
+  | IfFalse : forall (B1 B2 : Block) (Sigma : State),
       SmallStepR (S_StmtConf (IfElse (BVal false) B1 B2) Sigma) (S_BlkConf B2 Sigma)
   | While : forall (X : BExp) (B : Block) (Sigma : State),
       SmallStepR (S_StmtConf (While X B) Sigma) (S_StmtConf (IfElse X (Blk (While X B)) EmptyBlk) Sigma)
+  | Program_intro : forall (S : Statement) (Ids : list string) (Sigma : State),
+    SmallStepR (S_PgmConf (Pgm Ids S)) (S_StmtConf S (fun x =>
+      match (In x Ids) with
+        | True => Some 0
+      end)
+    )
 .
 
 Inductive NSmallSteps : nat -> SmallConfig -> SmallConfig -> Prop :=

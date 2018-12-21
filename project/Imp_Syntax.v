@@ -1,5 +1,6 @@
 Require Import Coq.Strings.String.
 Require Export ZArith_base.
+Require Import Coq.Init.Nat.
 
 Inductive AExp : Type :=
   | ANum : nat -> AExp

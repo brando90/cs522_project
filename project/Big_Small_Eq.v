@@ -8,7 +8,6 @@ Require Import Coq.Strings.String.
 Definition State := string -> (option nat).
 Definition ConfigEquivR (C1 C2 : SmallConfig) :=
   exists N : nat, NSmallSteps N C1 C2.
-  
 
 Theorem Big_Small_Equiv_Stmt : forall (S : Statement) (S1 S2 : State),
   (BigStepR (B_StmtConf S S1) (B_StateConf S2)) <-> (ConfigEquivR (S_StmtConf S S1) (S_BlkConf EmptyBlk S2)).

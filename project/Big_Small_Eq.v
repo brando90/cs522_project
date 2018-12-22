@@ -24,12 +24,8 @@ Proof.
 
 Admitted.
 
-Theorem Big_Small_Equiv_Stmt : forall (S : Statement) (S1 S2 : State),
-  (BigStepR (B_StmtConf S S1) (B_StateConf S2)) <-> (ConfigEquivR (S_StmtConf S S1) (S_BlkConf EmptyBlk S2)).
-Admitted.
-
-Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
-  (BigStepR (B_PgmConf P) (B_StateConf S')) <-> (ConfigEquivR (S_PgmConf P) (S_BlkConf EmptyBlk S')).
+Theorem Big_Small_Equiv_Stmt : forall (S' : Statement) (S1 S2 : State),
+  (BigStepR (B_StmtConf S' S1) (B_StateConf S2)) <-> (ConfigEquivR (S_StmtConf S' S1) (S_BlkConf EmptyBlk S2)).
   intros.
   split.
   (* big step -> small step *)
@@ -95,15 +91,12 @@ Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
 Admitted.
 
 Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
+  (BigStepR (B_PgmConf P) (B_StateConf S')) <-> (ConfigEquivR (S_PgmConf P) (S_BlkConf EmptyBlk S')).
 
 (* big step -> small step *)
-  (BigStepR (B_PgmConf P) (B_StateConf S')) <-> (ConfigEquivR (S_PgmConf P) (S_BlkConf EmptyBlk S')).
   intros.
   split.
-  induction P.
-  intros.
-  unfold ConfigEquivR. refine (ex_intro _ _ _) .
-  admit.
+  apply Big_Small_ForwardImpl.
 
 (* small step -> big step *)
   case P.
@@ -119,4 +112,4 @@ Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
   apply Program_intro.
   auto.
   auto.
-Admitted.
+Qed.

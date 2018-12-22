@@ -9,6 +9,22 @@ Definition State := string -> (option nat).
 Definition ConfigEquivR (C1 C2 : SmallConfig) :=
   exists N : nat, NSmallSteps N C1 C2.
 
+Theorem Big_Small_ForwardImpl   : 
+  forall (P : Program) (S' : State),
+    (BigStepR (B_PgmConf P) (B_StateConf S')) -> (ConfigEquivR (S_PgmConf P) (S_BlkConf EmptyBlk S')).
+Proof.
+  intros.
+  (* split. *)
+  induction P.
+  (* intros. *)
+  unfold ConfigEquivR. 
+  refine (ex_intro _ _ _) .
+
+  (* big step -> small step direction *)
+
+
+Admitted.
+
 Theorem Big_Small_Equiv_Stmt : forall (S : Statement) (S1 S2 : State),
   (BigStepR (B_StmtConf S S1) (B_StateConf S2)) <-> (ConfigEquivR (S_StmtConf S S1) (S_BlkConf EmptyBlk S2)).
 Admitted.
@@ -88,4 +104,17 @@ Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
   cut (BigStepR (B_PgmConf (Pgm l s2)) (B_StateConf S)).
   intros.
 .*)
+Admitted.
+
+Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
+  (BigStepR (B_PgmConf P) (B_StateConf S')) <-> (ConfigEquivR (S_PgmConf P) (S_BlkConf EmptyBlk S')).
+  intros.
+  split.
+  induction P.
+  intros.
+  unfold ConfigEquivR. refine (ex_intro _ _ _) .
+  admit.
+
+(* big step -> small step direction *)
+
 Admitted.

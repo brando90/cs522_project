@@ -91,6 +91,7 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
     BigStepR (B_BExpConf Bl Sigma) (B_BExpConf (BVal true) Sigma) ->
     BigStepR (B_StmtConf (While Bl Bck) Sigma) (B_StateConf Sigma') ->
     BigStepR (B_StmtConf (While Bl Bck) Sigma) (B_StateConf Sigma')
+  (* TODO: crl < int Xl ; S > => < Sigma > if < S,(Xl |-> 0) > => < Sigma > . *)
   | BigStep_Pgm : forall (S : Statement) (Ids : list string) (Sigma : State),
     BigStepR (B_StmtConf S (fun x =>
       if (bool_in x Ids) then Some 0 else None
@@ -102,7 +103,12 @@ Theorem BigStep_AEval : forall (Sigma : State) (A : AExp) (n : nat),
   (((aeval Sigma A) = Some n) <-> (BigStepR (B_AExpConf A Sigma) (B_AExpConf (ANum n) Sigma))).
   Proof.
   Admitted.
-  (* TODO: crl < int Xl ; S > => < Sigma > if < S,(Xl |-> 0) > => < Sigma > . *)
+
+Theorem BigStep_BEval : forall (Sigma : State) (B : BExp) (b : bool),
+  (((beval Sigma B) = Some b) <-> (BigStepR (B_BExpConf B Sigma) (B_BExpConf (BVal b) Sigma))).
+  Proof.
+  Admitted.
+
 (*
 Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   (((aeval Sigma A) = Some n) <-> (ConfigEquivR (B_AExpConf A Sigma) (B_AExpConf (ANum n) Sigma))).

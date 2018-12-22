@@ -1,4 +1,5 @@
 Add LoadPath "C:\\Users\\ument\\School\\cs522\\cs522_project\\project".
+Add LoadPath "/Users/brandomiranda/home_simulation_research/cs522_project/project".
 Require Import Imp_Syntax.
 Require Import Coq.Strings.String.
 Require Import Coq.Bool.Bool.

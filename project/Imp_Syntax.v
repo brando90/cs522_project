@@ -29,6 +29,11 @@ with Statement : Type :=
   | IfElse : BExp -> Block -> Block -> Statement
   | While : BExp -> Block -> Statement.
 
+Check Block.
+Check Statement.
+Check Assignment.
+Compute Assignment "a" (ANum 2).
+
 Inductive Program : Type :=
   | Pgm : list string -> Statement -> Program.
 

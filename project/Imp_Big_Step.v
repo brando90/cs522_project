@@ -13,7 +13,7 @@ Definition State := string -> (option nat).
 Definition t_update (m : State) (x : string) (v : nat) :=
   fun x' => if string_dec x x' then Some v else m x'.
 
-Inductive BigConfig : Type := 
+Inductive BigConfig : Type :=
   | B_AExpConf : AExp -> State -> BigConfig
   | B_BExpConf : BExp -> State -> BigConfig
   | B_StmtConf : Statement -> State -> BigConfig
@@ -73,8 +73,8 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
       BigStepR (B_StmtConf S2 Sigma1) (B_StateConf Sigma2) ->
       BigStepR (B_StmtConf (Seq S1 S2) Sigma) (B_StateConf Sigma2)
   (* crl < if (B) S1 else S2,Sigma > => < Sigma1 > if < B,Sigma > => < true > /\ < S1,Sigma > => < Sigma1 > . *)
-  | BigStep_If_True: forall (B : BExp) (B1 B2 : Block) (S1 S2 : Statement) (Sigma Sigma1 : State),
-      BigStepR (B_BExpConf B Sigma) (B_BExpConf (BVal true) Sigma) -> 
+  | BigStep_If_True: forall (B : BExp) (B1 B2 : Block) (Sigma Sigma1 : State),
+      BigStepR (B_BExpConf B Sigma) (B_BExpConf (BVal true) Sigma) ->
       BigStepR (B_BlkConf B1 Sigma) (B_StateConf Sigma1) ->
       BigStepR (B_StmtConf (IfElse B B1 B2) Sigma) (B_StateConf Sigma1)
   (* crl < if (B) S1 else S2,Sigma > => < Sigma2 > if < B,Sigma > => < false > /\ < S2,Sigma > => < Sigma2 > . *)
@@ -112,5 +112,5 @@ Theorem BigStep_BEval : forall (Sigma : State) (B : BExp) (b : bool),
 (*
 Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   (((aeval Sigma A) = Some n) <-> (ConfigEquivR (B_AExpConf A Sigma) (B_AExpConf (ANum n) Sigma))).
-  Proof. 
+  Proof.
   Admitted.*)

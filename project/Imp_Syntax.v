@@ -40,24 +40,24 @@ Inductive Program : Type :=
 Definition State := string -> (option nat).
 Definition t_update (m : State) (x : string) (v : nat) :=
   fun x' => if string_dec x x' then Some v else m x'.
-  
+
 Fixpoint aeval (st : State) (a : AExp) : option nat :=
   match a with
   | ANum n => Some n
   | AId x => st x
-  | APlus a1 a2 => 
-    match (aeval st a1) with 
-    | Some n => 
+  | APlus a1 a2 =>
+    match (aeval st a1) with
+    | Some n =>
       match (aeval st a2) with
         | Some n0 => Some (n + n0)
         | None => None
       end
     | None => None
     end
-  | ADiv a1 a2 => 
+  | ADiv a1 a2 =>
     match (aeval st a2) with
       | Some 0 => None
-      | Some (S n) => 
+      | Some (S n) =>
         match (aeval st a1) with
           | Some n0 => Some ( div n0 (S n))
           | None => None

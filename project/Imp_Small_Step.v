@@ -13,7 +13,7 @@ Definition State := string -> (option nat).
 Definition t_update (m : State) (x : string) (v : nat) :=
   fun x' => if string_dec x x' then Some v else m x'.
 
-Inductive SmallConfig : Type := 
+Inductive SmallConfig : Type :=
   | S_AExpConf : AExp -> State -> SmallConfig
   | S_BExpConf : BExp -> State -> SmallConfig
   | S_StmtConf : Statement -> State -> SmallConfig
@@ -81,6 +81,15 @@ Inductive SmallStepR : SmallConfig -> SmallConfig -> Prop :=
       SmallStepR (S_StmtConf (IfElse (BVal true) B1 B2) Sigma) (S_BlkConf B1 Sigma)
   | IfFalse : forall (B1 B2 : Block) (Sigma : State),
       SmallStepR (S_StmtConf (IfElse (BVal false) B1 B2) Sigma) (S_BlkConf B2 Sigma)
+  | SeqStep : forall (S1 S2 S3 : Statement) (Sigma1 Sigma2 : State),
+      SmallStepR (S_StmtConf S1 Sigma1) (S_StmtConf S2 Sigma2) ->
+      SmallStepR (S_StmtConf (Seq S1 S3) Sigma1) (S_StmtConf (Seq S2 S3) Sigma2)
+  | SeqDone : forall (S1 S2 : Statement) (Sigma1 Sigma2 : State),
+      SmallStepR (S_StmtConf S1 Sigma1) (S_BlkConf EmptyBlk Sigma2) ->
+      (* TODO this is a little messy, not strictly small step but seems it must be
+      done this way due to not having blocks be subsorts of statements. would be
+      possible to fix this but would require many changes elsewhere *)
+      SmallStepR (S_StmtConf (Seq S1 S2) Sigma1) (S_StmtConf S2 Sigma2)
   | While : forall (X : BExp) (B : Block) (Sigma : State),
       SmallStepR (S_StmtConf (While X B) Sigma) (S_StmtConf (IfElse X (Blk (While X B)) EmptyBlk) Sigma)
   | Program_intro : forall (S : Statement) (Ids : list string) (Sigma : State),
@@ -93,87 +102,40 @@ Inductive NSmallSteps : nat -> SmallConfig -> SmallConfig -> Prop :=
   | Zero : forall (C : SmallConfig), NSmallSteps 0 C C
   | Succ : forall (C1 C2 C3 : SmallConfig) (N M : nat),
       (NSmallSteps N C2 C3) -> (SmallStepR C1 C2) -> (M = (S N))-> (NSmallSteps M C1 C3)
+  | Skip : forall (C1 C2 : SmallConfig) (N : nat), NSmallSteps N C1 C2 -> NSmallSteps (S N) C1 C2
 .
-(*
-Inductive ConfigEquivR : SmallConfig -> SmallConfig -> Prop :=
-  | Trans : forall (C1 C2 C3 : SmallConfig),
-      ConfigEquivR C1 C2 -> ConfigEquivR C2 C3 -> ConfigEquivR C1 C3
-  | Symmetry : forall (C1 C2 : SmallConfig),
-      ConfigEquivR C1 C2 -> ConfigEquivR C2 C1
-  | Reflex : forall (C : SmallConfig), ConfigEquivR C C
-  | SmallStep : forall (C1 C2 : SmallConfig),
-      SmallStepR C1 C2 -> ConfigEquivR C1 C2
-.
-*)
+
+(* these lemmas all seem fairly intuitive but are hard to prove so we use them
+   without proof *)
 
 Definition ConfigEquivR (C1 C2 : SmallConfig) :=
   exists N : nat, NSmallSteps N C1 C2.
 
-Definition relation (X: Type) := X -> X -> Prop.
+Theorem asgn_success_iff : forall (s : string) (a : AExp) (S1 S2 : State),
+  (ConfigEquivR (S_StmtConf (Assignment s a) S1) (S_BlkConf EmptyBlk S2)) <->
+  (exists y : nat, ConfigEquivR (S_StmtConf (Assignment s a) S1) (S_StmtConf (Assignment s (ANum y)) S1)).
+  Admitted.
 
-Definition reflexive {X: Type} (R: relation X) :=
-  forall a : X, R a a.
+Theorem asgn_aexp_steps : forall (y : nat) (s : string) (a : AExp) (S1 : State),
+  ConfigEquivR (S_StmtConf (Assignment s a) S1) (S_StmtConf (Assignment s (ANum y)) S1) <->
+  ConfigEquivR (S_AExpConf a S1) (S_AExpConf (ANum y) S1).
+  Admitted.
 
-Definition transitive {X: Type} (R: relation X) :=
-  forall a b c : X, (R a b) -> (R b c) -> (R a c).
+Theorem seq_success_first : forall (S1 S2 : Statement) (Sigma1 Sigma2 : State),
+  (ConfigEquivR (S_StmtConf (Seq S1 S2) Sigma1) (S_StmtConf S2 Sigma2)) <->
+  (ConfigEquivR (S_StmtConf S1 Sigma1) (S_BlkConf EmptyBlk Sigma2)).
+  Admitted.
 
-Definition symmetric {X: Type} (R: relation X) :=
-  forall a b : X, (R a b) -> (R b a).
-
-Definition equivalence {X:Type} (R: relation X) :=
-  (reflexive R) /\ (symmetric R) /\ (transitive R).
-
-Theorem SmallStepEquiv : equivalence ConfigEquivR.
-Proof.
-  constructor ; try(constructor).
-
-(*
-  constructor ; constructor ; try(constructor).
-  apply Reflex.
-  exact H.
-  constructor.
-  generalize H0.
-  generalize H.
-  apply Trans.
-  *)
-Admitted.
-
-Theorem ImplEqual : forall (C1 C2 : SmallConfig),
-  ConfigEquivR C1 C2 -> (C1 = C2).
-Proof.
-  intros.
-  inversion H ; subst.
-Admitted.
+Theorem seq_success_total : forall (S1 S2 : Statement) (Sigma1 Sigma2 : State),
+  (exists Sigma3 : State,
+    ((ConfigEquivR (S_StmtConf S1 Sigma1) (S_BlkConf EmptyBlk Sigma3)) /\
+    (ConfigEquivR (S_StmtConf S2 Sigma3) (S_BlkConf EmptyBlk Sigma2)))) <->
+  (ConfigEquivR (S_StmtConf (Seq S1 S2) Sigma1) (S_BlkConf EmptyBlk Sigma2)).
+  Admitted.
 
 Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   (((aeval Sigma A) = Some n) <-> (ConfigEquivR (S_AExpConf A Sigma) (S_AExpConf (ANum n) Sigma))).
   Proof.
-  intros.
-  split.
-  generalize dependent n.
-  induction A.
-  intros.
-  inversion H.
-  (*
-  apply SmallStep.
-  apply Reflex.
-  intros.
-  admit.
-  admit.
-  admit.
-  intros.
-  generalize dependent n.
-  induction A.
-  intros.
-  simpl.
-  cut (n = n0).
-  intros.
-  subst.
-  reflexivity.
-  cut (forall (X Y : SmallConfig), (ConfigEquivR X Y )).
-  inversion H ; subst.
-  
-  *)
   Admitted.
 
 Theorem BEvalR : forall (Sigma : State) (B : BExp) (b : bool),
@@ -184,37 +146,8 @@ Theorem BEvalR : forall (Sigma : State) (B : BExp) (b : bool),
 Theorem Confluence : forall (A B C : SmallConfig),
   (SmallStepR A B) -> (SmallStepR A C) -> exists D : SmallConfig, ((SmallStepR B D) /\ (SmallStepR C D)).
 Proof.
-  induction A ; intros.
-  - induction a.
-  admit.
-  destruct a1 ; destruct a2 ; try rewrite PlusANums in H.
-  destruct B.
-  intros.
-  refine (ex_intro _ _ _).
-  refine (conj _ _).
-  (*induction B*)
 Admitted.
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+Theorem ConfluenceVariant : forall (C1 C2 C3 : SmallConfig), ConfigEquivR C1 C3 -> ConfigEquivR C1 C2 -> ConfigEquivR C2 C3.
+Proof.
+Admitted.

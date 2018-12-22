@@ -33,13 +33,27 @@ Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
   intros.
   apply BigStep_Pgm.
   rewrite Big_Small_Equiv_Stmt.
+  cut (forall (C1 C2 C3 : SmallConfig), ConfigEquivR C1 C3 -> ConfigEquivR C1 C2 -> ConfigEquivR C2 C3).
+  intros.
+  apply H0 with (C1 := (S_PgmConf (Pgm l s))).
+  exact H.
   unfold ConfigEquivR.
+  refine (ex_intro _ (S 0) _).
+  apply Succ with (C2 := (S_StmtConf s (fun x : string => if bool_in x l then Some 0 else None))) (N := 0).
+  apply Zero.
+  apply Program_intro.
+  auto.
+  auto.
+  admit. (* seems intuitive but very hard to prove *)
   unfold ConfigEquivR in H.
   cut (exists N : nat, NSmallSteps (S N) (S_PgmConf (Pgm l s)) (S_BlkConf EmptyBlk S')).
   intros.
   destruct H0.
   refine (ex_intro _ x _).
-  apply Succ with (C2 := (S_PgmConf (Pgm l s))) (N := x) .
+
+  intros.
+  apply H1 with (C1 := ).
+  apply Succ with (C2 := (S_StmtConf s (fun x0 : string => if bool_in x0 l then Some 0 else None))) in H0.
   exact H0.
   rewrite <- Succ with (C1 := (S_StmtConf s (fun x : string => if bool_in x l then Some 0 else None))) (C2 := (S_PgmConf (Pgm l s))) (C3 := (S_BlkConf EmptyBlk S')).
   generalize dependent S.

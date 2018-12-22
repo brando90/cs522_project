@@ -92,6 +92,7 @@ Inductive NSmallSteps : nat -> SmallConfig -> SmallConfig -> Prop :=
   | Zero : forall (C : SmallConfig), NSmallSteps 0 C C
   | Succ : forall (C1 C2 C3 : SmallConfig) (N M : nat),
       (NSmallSteps N C2 C3) -> (SmallStepR C1 C2) -> (M = (S N))-> (NSmallSteps M C1 C3)
+  | Skip : forall (C1 C2 : SmallConfig) (N : nat), NSmallSteps N C1 C2 -> NSmallSteps (S N) C1 C2
 .
 (*
 Inductive ConfigEquivR : SmallConfig -> SmallConfig -> Prop :=
@@ -103,10 +104,9 @@ Inductive ConfigEquivR : SmallConfig -> SmallConfig -> Prop :=
   | SmallStep : forall (C1 C2 : SmallConfig),
       SmallStepR C1 C2 -> ConfigEquivR C1 C2
 .
-*)
 
-Definition ConfigEquivR (C1 C2 : SmallConfig) :=
-  exists N : nat, NSmallSteps N C1 C2.
+
+
 
 Definition relation (X: Type) := X -> X -> Prop.
 
@@ -136,13 +136,20 @@ Proof.
   apply Trans.
   *)
 Admitted.
+*)
 
-Theorem ImplEqual : forall (C1 C2 : SmallConfig),
-  ConfigEquivR C1 C2 -> (C1 = C2).
-Proof.
-  intros.
-  inversion H ; subst.
-Admitted.
+Definition ConfigEquivR (C1 C2 : SmallConfig) :=
+  exists N : nat, NSmallSteps N C1 C2.
+
+Theorem asgn_success_iff : forall (s : string) (a : AExp) (S1 S2 : State),
+  (ConfigEquivR (S_StmtConf (Assignment s a) S1) (S_BlkConf EmptyBlk S2)) <->
+  (exists y : nat, ConfigEquivR (S_StmtConf (Assignment s a) S1) (S_StmtConf (Assignment s (ANum y)) S1)).
+  Admitted.
+
+Theorem asgn_aexp_steps : forall (y : nat) (s : string) (a : AExp) (S1 : State),
+  ConfigEquivR (S_StmtConf (Assignment s a) S1) (S_StmtConf (Assignment s (ANum y)) S1) <->
+  ConfigEquivR (S_AExpConf a S1) (S_AExpConf (ANum y) S1).
+  Admitted.
 
 Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   (((aeval Sigma A) = Some n) <-> (ConfigEquivR (S_AExpConf A Sigma) (S_AExpConf (ANum n) Sigma))).

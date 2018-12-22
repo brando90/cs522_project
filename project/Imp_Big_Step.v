@@ -73,7 +73,7 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
       BigStepR (B_StmtConf S2 Sigma1) (B_StateConf Sigma2) ->
       BigStepR (B_StmtConf (Seq S1 S2) Sigma) (B_StateConf Sigma2)
   (* crl < if (B) S1 else S2,Sigma > => < Sigma1 > if < B,Sigma > => < true > /\ < S1,Sigma > => < Sigma1 > . *)
-  | BigStep_If_True: forall (B : BExp) (B1 B2 : Block) (S1 S2 : Statement) (Sigma Sigma1 : State),
+  | BigStep_If_True: forall (B : BExp) (B1 B2 : Block) (Sigma Sigma1 : State),
       BigStepR (B_BExpConf B Sigma) (B_BExpConf (BVal true) Sigma) -> 
       BigStepR (B_BlkConf B1 Sigma) (B_StateConf Sigma1) ->
       BigStepR (B_StmtConf (IfElse B B1 B2) Sigma) (B_StateConf Sigma1)
@@ -100,6 +100,11 @@ Inductive BigStepR : BigConfig -> BigConfig -> Prop :=
 
 Theorem BigStep_AEval : forall (Sigma : State) (A : AExp) (n : nat),
   (((aeval Sigma A) = Some n) <-> (BigStepR (B_AExpConf A Sigma) (B_AExpConf (ANum n) Sigma))).
+  Proof.
+  Admitted.
+
+Theorem BigStep_BEval : forall (Sigma : State) (A : BExp) (n : bool),
+  (((beval Sigma A) = Some n) <-> (BigStepR (B_BExpConf A Sigma) (B_BExpConf (BVal n) Sigma))).
   Proof.
   Admitted.
   (* TODO: crl < int Xl ; S > => < Sigma > if < S,(Xl |-> 0) > => < Sigma > . *)

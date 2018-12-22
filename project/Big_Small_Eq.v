@@ -14,6 +14,8 @@ Theorem Big_Small_Equiv_Stmt : forall (S' : Statement) (S1 S2 : State),
   split.
   (* big step -> small step *)
   admit.
+
+
   (* small step -> big step *)
   generalize dependent S1.
   generalize dependent S2.
@@ -57,6 +59,15 @@ Theorem Big_Small_Equiv_Stmt : forall (S' : Statement) (S1 S2 : State),
   exact H.
 
   (* if/else *)
+  cut (exists y : bool, beval S1 b = Some y).
+  intros.
+  destruct H0.
+  apply BigStep_BEval in H0.
+  destruct x.
+  apply BigStep_If_True.
+  exact H0.
+  admit.
+  admit.
   admit.
 
   (* while *)

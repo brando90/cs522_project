@@ -153,6 +153,7 @@ Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   induction A.
   intros.
   inversion H.
+  (* seems very hard, maybe we leave unproven or work on this last *)
   (*
   apply SmallStep.
   apply Reflex.
@@ -178,6 +179,7 @@ Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
 Theorem BEvalR : forall (Sigma : State) (B : BExp) (b : bool),
   (((beval Sigma B) = Some b) <-> (SmallStepR (S_BExpConf B Sigma) (S_BExpConf (BVal b) Sigma))).
   Proof.
+    (* seems very hard, maybe we leave unproven or work on this last *)
   Admitted.
 
 Theorem Confluence : forall (A B C : SmallConfig),

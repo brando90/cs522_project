@@ -11,9 +11,15 @@ Definition ConfigEquivR (C1 C2 : SmallConfig) :=
 
 Theorem Big_Small_Equiv_Stmt : forall (S : Statement) (S1 S2 : State),
   (BigStepR (B_StmtConf S S1) (B_StateConf S2)) <-> (ConfigEquivR (S_StmtConf S S1) (S_BlkConf EmptyBlk S2)).
+  split.
+  (* big step -> small step needs to be worked on *)
+  admit.
+  (* small step -> big step - leave for Kenny*)
 Admitted.
 
 Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
+
+(* big step -> small step needs to be worked on *)
   (BigStepR (B_PgmConf P) (B_StateConf S')) <-> (ConfigEquivR (S_PgmConf P) (S_BlkConf EmptyBlk S')).
   intros.
   split.
@@ -22,7 +28,7 @@ Theorem Big_Small_Equiv : forall (P : Program) (S' : State),
   unfold ConfigEquivR. refine (ex_intro _ _ _) .
   admit.
 
-(* small step -> big step direction *)
+(* small step -> big step direction Kenny is working on this *)
   case P.
   intros.
   apply BigStep_Pgm.

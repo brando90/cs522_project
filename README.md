@@ -33,5 +33,7 @@
     * If the expression can successfully rewrite to a concrete value, then the assignment can rewrite to empty block with updated state and vice versa
     * If the sequence can successfully rewrite to empty block with some new state, then the first statement must have successfully rewritten to some intermediate state and the second statement rewritten from that state to empty block with the new state, and vice versa
 
+----
 
+Note the lf_brando lf_kenny files can be ignored. They are tutorials and book exercises on theorem proving.
 

@@ -35,7 +35,7 @@ Theorem Big_Small_Equiv_Stmt : forall (S' : Statement) (S1 S2 : State),
   rewrite <- asgn_aexp_steps.
   exact H.
 
-  
+
   (* sequence *)
   cut (exists Sigma1 : State, ConfigEquivR (S_StmtConf S'1 S1) (S_BlkConf EmptyBlk Sigma1)).
   intros.
@@ -45,50 +45,22 @@ Theorem Big_Small_Equiv_Stmt : forall (S' : Statement) (S1 S2 : State),
   apply BigStep_Seq with (Sigma1 := x).
   refine (IHS'1 x S1 H0).
   refine (IHS'2 S2 x _).
+  (*rewrite <- (seq_success_iff S'1 S'2 x S1).*)
   apply ConfluenceVariant with (C1 := (S_StmtConf (Seq S'1 S'2) S1)).
   exact H.
-  unfold Imp_Small_Step.ConfigEquivR.
-  unfold ConfigEquivR in H0.
-  destruct H0.
-  refine (ex_intro _ (S x0) _).
-  apply Succ with (N := x0) (C2 := (S_StmtConf S'2 x)).
-(*
-  apply Zero.
-  apply SeqDone.
+  rewrite seq_success_first.
   exact H0.
-  admit.
-
-  refine (ex_intro _ S1 _).
-  induction x0.
-  generalize dependent a.
-  intro a.
-  destruct a ; intros ; inversion H0 ; try(apply Zero) ; try(discriminate H3).
-  apply Succ with (C2 := S_StmtConf (Assignment s a) S1) (N := x0).
-  apply IHx0.
-  admit.
-  admit.
-  auto.
-  cut (exists y : nat, ConfigEquivR (S_StmtConf (Assignment s (ANum y)) S1) (S_BlkConf EmptyBlk S2)).
-  intros.
-  destruct H0.
-  refine (ex_intro _ x _).
-  apply AEvalR.
-  apply ConfluenceVariant with (C1 := (S_StmtConf (Assignment s a) S1)).
-
-  cut (x = n).
-  intros.
-  subst.
-  apply Zero.
-  inversion H0.
-  auto.
-  discriminate H3.
-  contradict H0.
-  rewrite <- AEvalR.
-  unfold ConfigEquivR in H.
+  apply seq_success_total in H.
   destruct H.
-  apply AEvalR in H0.
-  admit. (* proof of state *)
-  admit. (* proof of value *)*)
+  refine (ex_intro _ x _ ).
+  destruct H.
+  exact H.
+
+  (* if/else *)
+  admit.
+
+  (* while *)
+  admit.
 Admitted.
 
 Theorem Big_Small_Equiv : forall (P : Program) (S' : State),

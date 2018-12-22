@@ -120,6 +120,18 @@ Theorem asgn_aexp_steps : forall (y : nat) (s : string) (a : AExp) (S1 : State),
   ConfigEquivR (S_AExpConf a S1) (S_AExpConf (ANum y) S1).
   Admitted.
 
+Theorem seq_success_first : forall (S1 S2 : Statement) (Sigma1 Sigma2 : State),
+  (ConfigEquivR (S_StmtConf (Seq S1 S2) Sigma1) (S_StmtConf S2 Sigma2)) <->
+  (ConfigEquivR (S_StmtConf S1 Sigma1) (S_BlkConf EmptyBlk Sigma2)).
+  Admitted.
+
+Theorem seq_success_total : forall (S1 S2 : Statement) (Sigma1 Sigma2 : State),
+  (exists Sigma3 : State,
+    ((ConfigEquivR (S_StmtConf S1 Sigma1) (S_BlkConf EmptyBlk Sigma3)) /\
+    (ConfigEquivR (S_StmtConf S2 Sigma3) (S_BlkConf EmptyBlk Sigma2)))) <->
+  (ConfigEquivR (S_StmtConf (Seq S1 S2) Sigma1) (S_BlkConf EmptyBlk Sigma2)).
+  Admitted.
+
 Theorem AEvalR : forall (Sigma : State) (A : AExp) (n : nat),
   (((aeval Sigma A) = Some n) <-> (ConfigEquivR (S_AExpConf A Sigma) (S_AExpConf (ANum n) Sigma))).
   Proof.
